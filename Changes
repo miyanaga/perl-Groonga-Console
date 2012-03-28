@@ -1,0 +1,6 @@
+Revision history for Perl extension Groonga::Console.
+
+0.01  Wed Mar 28 10:53:10 2012
+	- original version; created by h2xs 1.23 with options
+		-A -n Groonga::Console
+

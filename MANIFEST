@@ -1,0 +1,8 @@
+Changes
+Console.xs
+Makefile.PL
+MANIFEST
+ppport.h
+README
+t/Groonga-Console.t
+lib/Groonga/Console.pm
