@@ -4,7 +4,7 @@ char *              STRINGMAYBEUNDEF
 
 OUTPUT
 GROONGA_REF
-                    sv_setref_pv( $arg, "Groonga::XS", (void*)$var );
+                    sv_setref_pv( $arg, "Groonga::Console", (void*)$var );
 STRINGMAYBEUNDEF
                     warn(\"${Package}::$func_name() -- UNABLE TO RETURN CHAR *\");
 
