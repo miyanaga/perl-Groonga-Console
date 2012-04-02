@@ -98,7 +98,7 @@ void Groonga::clear_errors() {
 
 bool Groonga::is_connected() {
     // Check if database opened.
-    database != NULL? TRUE: FALSE;
+    return database != NULL? TRUE: FALSE;
 }
 
 void Groonga::console( strings &input, strings &output ) {
