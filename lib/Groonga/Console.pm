@@ -39,12 +39,12 @@ sub file {
     local $/ = '';
     local *FH;
     unless( open( FH, $path ) ) {
-        return $self->add_error( "Failure to open file '$file': $!" );
+        return $self->add_error( "Failure to open file '$path': $!" );
     }
 
     my $content = <FH>;
     unless ( close(FH) ) {
-        return $self->add_error( "Failure to close file '$file': $!" );
+        return $self->add_error( "Failure to close file '$path': $!" );
     }
 
     $self->console($content);
