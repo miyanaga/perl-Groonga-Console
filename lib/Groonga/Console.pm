@@ -25,12 +25,30 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 require XSLoader;
 XSLoader::load('Groonga::Console', $VERSION);
 
 # Preloaded methods go here.
+
+sub file {
+    my $self = shift;
+    my ( $path ) = @_;
+
+    local $/ = '';
+    local *FH;
+    unless( open( FH, $path ) ) {
+        return $self->add_error( "Failure to open file '$file': $!" );
+    }
+
+    my $content = <FH>;
+    unless ( close(FH) ) {
+        return $self->add_error( "Failure to close file '$file': $!" );
+    }
+
+    $self->console($content);
+}
 
 1;
 __END__
@@ -54,6 +72,9 @@ Groonga::Console - Simple Perl binding to access Groonga console.
   # @results has each results. But the order may not match with input.
   # @results is just lines console outputted.
   my @results = $groonga->console("COMMAND1", "COMMAND2");
+
+  # Read commands from file.
+  my @results = $groonga->file("path/to/file");
 
   # Getting the context errors and clear them.
   my @errors = $groonga->errors;

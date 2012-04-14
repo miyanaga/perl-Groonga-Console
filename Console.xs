@@ -189,6 +189,12 @@ bool
 Groonga::is_connected()
 
 void
+Groonga::add_error( error )
+    char *error
+    CODE:
+        THIS->errors.push_back(string(error));
+
+void
 Groonga::errors()
     PPCODE:
         strings &errs = THIS->errors;
