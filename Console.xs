@@ -135,6 +135,12 @@ void Groonga::console( strings &input, strings &output ) {
             string &line = *it;
             if ( line.length() < 1 ) continue;
 
+            // Flush buffer.
+            char *res;
+            unsigned int len;
+            int flags;
+            grn_ctx_recv( &context, &res, &len, &flags );
+
             rc = grn_ctx_send( &context, line.c_str(), line.length(), context_flags );
 
             // Handle errors.
@@ -149,9 +155,6 @@ void Groonga::console( strings &input, strings &output ) {
             }
 
             // Try to receive result.
-            char *res;
-            unsigned int len;
-            int flags;
             grn_ctx_recv( &context, &res, &len, &flags );
             if ( context.rc == GRN_SUCCESS && len > 0 ) {
                 output.push_back(string(res, len));
