@@ -25,7 +25,7 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 require XSLoader;
 XSLoader::load('Groonga::Console', $VERSION);
@@ -42,7 +42,7 @@ sub file {
         return $self->add_error( "Failure to open file '$path': $!" );
     }
 
-    my $content = <FH>;
+    my $content = join( '', <FH> );
     unless ( close(FH) ) {
         return $self->add_error( "Failure to close file '$path': $!" );
     }

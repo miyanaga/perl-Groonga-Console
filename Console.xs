@@ -32,7 +32,7 @@ class Groonga {
         static string last_error;
         static void set_last_error(string);
 
-        Groonga( string path, int context_flags = 0 /*GRN_CTX_BATCH_MODE*/ );
+        Groonga( string path, int context_flags = 0 ); /* GRN_CTX_BATCH_MODE ); */
         ~Groonga();
 
         strings errors;
@@ -147,11 +147,9 @@ void Groonga::console( strings &input, strings &output ) {
             if ( rc < 0 ) {
                 string message = "Failure to send: " + line;
                 add_error(message);
-                return;
             }
             if ( context.rc != GRN_SUCCESS ) {
                 add_context_error();
-                return;
             }
 
             // Try to receive result.
