@@ -25,12 +25,21 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 require XSLoader;
 XSLoader::load('Groonga::Console', $VERSION);
 
 # Preloaded methods go here.
+
+sub debug_mode {
+    my $pkg = shift;
+    my ( $switch ) = @_;
+    if ( defined($switch) ) {
+        $pkg->set_debug_mode( $switch? 1: 0 );
+    }
+    $pkg->get_debug_mode;
+}
 
 sub file {
     my $self = shift;
@@ -48,6 +57,11 @@ sub file {
     }
 
     $self->console($content);
+}
+
+sub execute {
+    my $self = shift;
+    $self->console(@_);
 }
 
 1;
