@@ -30,13 +30,23 @@ class Groonga {
         grn_ctx context;
         grn_obj *database;
 
+        grn_logger_info simple_logger_info;
+        grn_logger_info callback_logger_info;
 
     public:
         static bool debug_mode;
         static void debug_log(string);
 
+        strings logs;
+        static void simple_logger_func(int level, const char *time, const char *title,
+                    const char *msg, const char *location, void *func_arg);
+
+        CV *logger_callback;
+        static void callback_logger_func(int level, const char *time, const char *title,
+                    const char *msg, const char *location, void *func_arg);
+        void set_logger(CV *, int flags);
+
         static string last_error;
-        static void set_last_error(string);
 
         Groonga( string path, int context_flags = GRN_CTX_PER_DB ); /* GRN_CTX_BATCH_MODE ); */
         void destroy();
@@ -61,6 +71,56 @@ void Groonga::debug_log( string message ) {
 bool Groonga::initialized = FALSE;
 string Groonga::last_error;
 
+void Groonga::simple_logger_func(int level, const char *time, const char *title,
+                    const char *msg, const char *location, void *func_arg) {
+    if ( msg ) {
+        Groonga *me = (Groonga*)func_arg;
+        me->logs.push_back(msg);
+    }
+}
+
+void Groonga::callback_logger_func(int level, const char *time, const char *title,
+                    const char *msg, const char *location, void *func_arg) {
+    Groonga *me = (Groonga*)func_arg;
+    CV* callback = me->logger_callback;
+
+    {
+        dSP;
+        ENTER;
+        SAVETMPS;
+
+        PUSHMARK(SP);
+        XPUSHs(sv_2mortal(newSViv(level)));
+
+        if ( time )
+            XPUSHs(sv_2mortal(newSVpv(time, string(time).length())));
+        else
+            XPUSHs(newSV(0));
+
+        if ( title )
+            XPUSHs(sv_2mortal(newSVpv(title, string(title).length())));
+        else
+            XPUSHs(newSV(0));
+
+        if ( msg )
+            XPUSHs(sv_2mortal(newSVpv(msg, string(msg).length())));
+        else
+            XPUSHs(newSV(0));
+
+        if ( location )
+            XPUSHs(sv_2mortal(newSVpv(location, string(location).length())));
+        else
+            XPUSHs(newSV(0));
+
+        PUTBACK;
+
+        call_sv((SV *)callback, G_VOID|G_DISCARD);
+
+        FREETMPS;
+        LEAVE;
+    }
+}
+
 Groonga::Groonga( string path, int _context_flags ) {
     int rc;
 
@@ -83,6 +143,17 @@ Groonga::Groonga( string path, int _context_flags ) {
     DEBUG("Initializing context");
     grn_ctx_init( &context, context_flags );
     DEBUG("Initialized context");
+
+    grn_logger_info logger_info = {
+        GRN_LOG_DEFAULT_LEVEL,
+        GRN_LOG_TIME|GRN_LOG_MESSAGE,
+        Groonga::simple_logger_func,
+        (void*)this
+    };
+    simple_logger_info = logger_info;
+    grn_logger_info_set( &context, &simple_logger_info );
+
+    logger_callback = NULL;
 
     if ( path.length() > 0 ) {
         // Open or create database.
@@ -108,6 +179,23 @@ Groonga::Groonga( string path, int _context_flags ) {
             return;
         }
         DEBUG("Created memory database");
+    }
+}
+
+void Groonga::set_logger(CV *cv, int flags) {
+    if ( cv ) {
+        logger_callback = cv;
+        grn_logger_info logger_info = {
+            GRN_LOG_DEFAULT_LEVEL,
+            flags >= 0? flags: GRN_LOG_TIME|GRN_LOG_MESSAGE,
+            Groonga::callback_logger_func,
+            (void*)this
+        };
+        callback_logger_info = logger_info;
+        grn_logger_info_set( &context, &callback_logger_info );
+    } else {
+        logger_callback = NULL;
+        grn_logger_info_set( &context, &simple_logger_info );
     }
 }
 
@@ -262,6 +350,11 @@ Groonga::get_debug_mode()
     OUTPUT:
         RETVAL
 
+void
+Groonga::set_logger(CV* callback = NULL, int flags = 0)
+    CODE:
+        THIS->set_logger(callback, flags);
+
 static SV *
 Groonga::last_error()
     CODE:
@@ -310,6 +403,20 @@ Groonga::clear_errors()
         THIS->errors.clear();
 
 void
+Groonga::logs()
+    PPCODE:
+        strings &logs = THIS->logs;
+        for( strings::iterator it = logs.begin(), end = logs.end(); it != end; it++ ) {
+            string &log = *it;
+            XPUSHs(sv_2mortal(newSVpv( log.c_str(), log.length() )));
+        }
+
+void
+Groonga::clear_logs()
+    CODE:
+        THIS->logs.clear();
+
+void
 Groonga::console(...)
     PPCODE:
         strings input, output;
@@ -321,3 +428,4 @@ Groonga::console(...)
             string &result = *it;
             XPUSHs(sv_2mortal(newSVpv( result.c_str(), result.length() )));
         }
+

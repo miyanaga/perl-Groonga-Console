@@ -1,6 +1,6 @@
 package Groonga::Console;
 
-use 5.012004;
+use 5.010;
 use strict;
 use warnings;
 
@@ -25,7 +25,7 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.13';
+our $VERSION = '0.15';
 
 require XSLoader;
 XSLoader::load('Groonga::Console', $VERSION);
@@ -60,6 +60,11 @@ sub file {
 }
 
 sub execute {
+    my $self = shift;
+    $self->console(@_);
+}
+
+sub run {
     my $self = shift;
     $self->console(@_);
 }
