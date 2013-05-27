@@ -9,18 +9,12 @@ use strict;
 use warnings;
 
 use Test::More;
-BEGIN { use_ok('Groonga::Console') };
+use_ok('Groonga::Console');
 
 my $g = Groonga::Console->new;
-$g->execute('status');
-my @logs = $g->logs;
-is scalar @logs, 2;
-like $logs[0], qr/>status/;
-like $logs[1], qr/rc=0/;
+ok $g;
 
-#########################
-
-# Insert your test code below, the Test::More module is use()ed here so read
-# its man page ( perldoc Test::More ) for help writing this test script.
+my $res = $g->execute('status');
+ok $res;
 
 done_testing;
